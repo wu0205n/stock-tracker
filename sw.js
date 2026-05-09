@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stock-tracker-v1';
+const CACHE_NAME = 'stock-tracker-v2'; // 每次更新 UI 後建議改一下版本號
 const urlsToCache = [
   './index.html',
   './manifest.json'
@@ -15,5 +15,20 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))
+  );
+});
+
+// 清理舊版快取
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
