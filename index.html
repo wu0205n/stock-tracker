@@ -7,7 +7,6 @@
     <link rel="manifest" href="./manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* 全域盒子模型修正，確保寬度計算精準 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         :root {
@@ -44,7 +43,6 @@
             letter-spacing: 1px;
         }
 
-        /* 看板樣式優化 */
         .dashboard {
             background: linear-gradient(145deg, #1e3a5f, #121212);
             border: 1px solid var(--border);
@@ -72,7 +70,6 @@
             padding-top: 12px;
         }
 
-        /* 輸入區域：欄位寬度對稱修正 */
         .add-section {
             background: var(--bg-card);
             padding: 18px;
@@ -86,7 +83,7 @@
 
         .input-group {
             display: flex;
-            gap: 10px; /* 欄位間距一致 */
+            gap: 10px;
             width: 100%;
         }
 
@@ -98,8 +95,8 @@
             border-radius: 10px;
             font-size: 14px;
             outline: none;
-            flex: 1; /* 重要：強制所有欄位平分寬度 */
-            width: 0; /* 修正 Flex 溢出 Bug */
+            flex: 1;
+            width: 0;
         }
 
         input:focus { border-color: var(--primary); }
@@ -113,11 +110,27 @@
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            margin-top: 5px;
             font-size: 16px;
         }
 
-        /* 股票卡片樣式 */
+        /* 重新載入按鈕樣式 */
+        .btn-reload {
+            background: none;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .btn-reload:active {
+            background: rgba(51, 153, 255, 0.1);
+        }
+
         .stock-card {
             background: var(--bg-card);
             padding: 16px;
@@ -166,7 +179,6 @@
             <div class="chart-box" id="cb" style="display:none;"><canvas id="pChart"></canvas></div>
         </div>
 
-        <!-- 輸入區域：已修正為完美對稱 -->
         <div class="add-section">
             <div class="input-group">
                 <input type="text" id="sym" placeholder="代碼 (3481)">
@@ -176,7 +188,10 @@
                 <input type="number" id="cst" placeholder="購入單價">
                 <input type="number" id="shr" placeholder="購入股數">
             </div>
+            <!-- 確認加入按鈕 -->
             <button class="btn-add" onclick="doAdd()">確認加入清單</button>
+            <!-- 新增：重新載入試算表按鈕 -->
+            <button class="btn-reload" onclick="load()">重新載入試算表</button>
         </div>
 
         <div id="list"></div>
@@ -289,7 +304,7 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         document.getElementById('sym').value = ''; document.getElementById('nam').value = '';
         document.getElementById('cst').value = ''; document.getElementById('shr').value = '';
-        setTimeout(load, 1000);
+        setTimeout(load, 1200);
     }
 
     async function doDel(row) {
