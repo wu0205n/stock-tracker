@@ -2,11 +2,14 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>庫藏追蹤系統</title>
     <link rel="manifest" href="./manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* 強制所有元素計算尺寸包含邊框，防止手機溢出 */
+        * { box-sizing: border-box; }
+
         :root {
             --bg-deep: #121212;
             --bg-card: #1e1e1e;
@@ -25,26 +28,26 @@
             background: var(--bg-deep);
             color: var(--text-main);
             margin: 0;
-            padding: 15px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .container { width: 100%; max-width: 500px; }
+        .container { width: 100%; max-width: 480px; }
 
         header h1 {
             color: var(--primary);
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 22px;
+            margin: 10px 0 20px 0;
         }
 
+        /* 總覽看板優化 */
         .dashboard {
             background: linear-gradient(145deg, #1e3a5f, #121212);
             border: 1px solid var(--border);
-            color: white;
-            padding: 20px;
+            padding: 16px;
             border-radius: 16px;
             margin-bottom: 20px;
             display: none;
@@ -53,13 +56,13 @@
         .dash-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-size: 14px;
             color: var(--text-sub);
         }
 
         #tPnl {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: bold;
             text-align: right;
             margin-top: 10px;
@@ -67,43 +70,52 @@
             padding-top: 10px;
         }
 
+        /* 輸入區域優化：解決手機溢出 */
         .add-section {
             background: var(--bg-card);
-            padding: 20px;
+            padding: 16px;
             border-radius: 16px;
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             border: 1px solid var(--border);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
         }
 
         input {
             background: var(--bg-input);
             border: 1px solid var(--border);
             color: white;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             outline: none;
+            width: 100%; /* 確保寬度受限於 flex 容器 */
         }
-
-        input::placeholder { color: #666; }
 
         .btn-add {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 14px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
         }
 
+        /* 股票卡片樣式修正 */
         .stock-card {
             background: var(--bg-card);
-            padding: 15px;
-            border-radius: 15px;
+            padding: 14px;
+            border-radius: 14px;
             margin-bottom: 12px;
             border-left: 5px solid #444;
             border-top: 1px solid var(--border);
@@ -112,31 +124,27 @@
         .stock-card.has-data { border-left-color: var(--orange); }
 
         .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .symbol-box b { font-size: 18px; color: var(--primary); }
-        .symbol-box small { color: var(--text-sub); }
-        .price-val { font-size: 22px; font-weight: bold; color: white; }
-        .pnl-row { text-align: right; font-weight: bold; font-size: 20px; margin-top: 10px; }
+        .symbol-box b { font-size: 16px; color: var(--primary); }
+        .price-val { font-size: 20px; font-weight: bold; color: white; }
+
+        .pnl-row { text-align: right; font-weight: bold; font-size: 18px; margin-top: 8px; }
 
         .btn-del {
-            background: rgba(255, 82, 82, 0.1);
+            background: rgba(255, 82, 82, 0.05);
             color: var(--red);
-            border: 1px solid rgba(255, 82, 82, 0.2);
-            padding: 5px 12px;
+            border: 1px solid rgba(255, 82, 82, 0.15);
+            padding: 4px 10px;
             border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
+            font-size: 11px;
             margin-top: 10px;
         }
 
         .chart-box {
-            background: #1a1a1a;
+            background: rgba(0,0,0,0.2);
             margin-top: 15px;
-            padding: 15px;
+            padding: 10px;
             border-radius: 12px;
-            border: 1px solid var(--border);
         }
-
-        .loading { text-align: center; color: var(--text-sub); padding: 40px; }
     </style>
 </head>
 <body>
@@ -151,8 +159,14 @@
         </div>
 
         <div class="add-section">
-            <div style="display:flex; gap:10px;"><input type="text" id="sym" placeholder="代碼" style="flex:1;"><input type="text" id="nam" placeholder="名稱" style="flex:1.5;"></div>
-            <div style="display:flex; gap:10px;"><input type="number" id="cst" placeholder="單價 (選填)" style="flex:1;"><input type="number" id="shr" placeholder="股數 (選填)" style="flex:1;"></div>
+            <div class="input-group">
+                <input type="text" id="sym" placeholder="代碼" style="flex: 1;">
+                <input type="text" id="nam" placeholder="名稱" style="flex: 1.5;">
+            </div>
+            <div class="input-group">
+                <input type="number" id="cst" placeholder="單價 (選填)" style="flex: 1;">
+                <input type="number" id="shr" placeholder="股數 (選填)" style="flex: 1;">
+            </div>
             <button class="btn-add" onclick="doAdd()">確認加入</button>
         </div>
 
@@ -160,18 +174,17 @@
     </div>
 
 <script>
-    // ⚠️ 務必填入你最新部署的 Apps Script 網址
     const API_URL = "https://script.google.com/macros/s/AKfycby9L6QFGoMMz0Vl3senZbrQfLBCgMd53kQM6WcQcMPDenfzhF54UhviK91shrPqW0JB/exec";
     let chart = null;
 
     async function load() {
         const div = document.getElementById('list');
-        div.innerHTML = '<div class="loading">正在同步雲端數據...</div>';
+        div.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">同步中...</div>';
         try {
             const res = await fetch(API_URL);
             const stocks = await res.json();
             render(stocks);
-        } catch (e) { div.innerHTML = '<div class="loading" style="color:var(--red);">載入超時，請檢查連線</div>'; }
+        } catch (e) { div.innerHTML = '<div style="text-align:center; color:var(--red);">連線失敗</div>'; }
     }
 
     function render(stocks) {
@@ -180,7 +193,7 @@
         let tc = 0, tv = 0, lbs = [], vls = [];
 
         if (stocks.length === 0) {
-            div.innerHTML = '<div class="loading">清單目前為空</div>';
+            div.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">清單目前為空</div>';
             document.getElementById('dashboard').style.display = 'none';
             return;
         }
@@ -190,13 +203,11 @@
             const card = document.createElement('div');
             card.className = 'stock-card';
             
-            // 判斷是否為「純觀察股票」：只要單價或股數任一為 0 即不顯示損益
             const hasTradeData = s.cost > 0 && s.shares > 0;
             let bodyContent = '';
             
             if (hasTradeData && !isNaN(curP)) {
                 card.classList.add('has-data');
-                // 國泰證券邏輯：手續費 28 折，最低 1 元
                 const rC = s.cost * s.shares;
                 const rV = curP * s.shares;
                 const bF = Math.max(1, Math.floor(rC * 0.001425 * 0.28));
@@ -204,15 +215,14 @@
                 const sF = Math.max(1, Math.floor(rV * 0.001425 * 0.28));
                 const sT = Math.floor(rV * 0.003);
                 const nV = Math.floor(rV) - sF - sT;
-                const pnl = nV - nC;
-                const per = (pnl / nC) * 100;
+                const pnl = nV - nC, per = (pnl / nC) * 100;
                 
                 tc += nC; tv += nV;
                 lbs.push(s.name); vls.push(nV);
 
                 bodyContent = `
                     <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px;">
-                        <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-sub);">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-sub);">
                             <span>成本: ${nC.toLocaleString()}</span><span>預計回收: ${nV.toLocaleString()}</span>
                         </div>
                         <div class="pnl-row" style="color:${pnl >= 0 ? 'var(--red)' : 'var(--green)'}">
@@ -223,7 +233,7 @@
 
             card.innerHTML = `
                 <div class="card-header">
-                    <div class="symbol-box"><b>${s.symbol}</b><br><small>${s.name}</small></div>
+                    <div class="symbol-box"><b>${s.symbol}</b><br><small style="color:var(--text-sub)">${s.name}</small></div>
                     <div class="price-val">${s.price}</div>
                 </div>
                 ${bodyContent}
@@ -252,16 +262,8 @@
         if (chart) chart.destroy();
         chart = new Chart(ctx, {
             type: 'doughnut',
-            data: { 
-                labels: lbs, 
-                datasets: [{ data: vls, backgroundColor: ['#5c7aff','#ff5252','#69f0ae','#ffd740','#e040fb','#ffab40'], borderWidth: 0 }] 
-            },
-            options: { 
-                plugins: { 
-                    legend: { position: 'bottom', labels: { color: '#a0a0a0', boxWidth: 10, font: { size: 11 } } } 
-                },
-                cutout: '70%'
-            }
+            data: { labels: lbs, datasets: [{ data: vls, backgroundColor: ['#3399ff','#ff5252','#69f0ae','#ffd740','#e040fb'], borderWidth: 0 }] },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: '#a0a0a0', boxWidth: 10, font: { size: 10 } } } }, cutout: '70%' }
         });
     }
 
@@ -277,16 +279,12 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         document.getElementById('sym').value = ''; document.getElementById('nam').value = '';
         document.getElementById('cst').value = ''; document.getElementById('shr').value = '';
-        setTimeout(load, 1200);
+        setTimeout(load, 1000);
     }
 
     async function doDel(row) {
         if (!confirm('確定刪除？')) return;
-        await fetch(API_URL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify({ action: "delete", rowIndex: row }) 
-        });
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: row }) });
         setTimeout(load, 1000);
     }
 
