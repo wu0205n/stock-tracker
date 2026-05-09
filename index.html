@@ -4,499 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>庫藏追蹤系統</title>
-    <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1a73e8">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2933/2933116.png">
-    
-    <!-- 引入 Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        :root {
-            --primary-color: #1a73e8;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #3c4043;
-            --tw-color: #e67e22;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 24px;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        /* 總資產看板樣式 */
-        .dashboard {
-            background: linear-gradient(135deg, #1a73e8, #2890ff);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(26,115,232,0.3);
-            display: none; 
-        }
-
-        .dash-title {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-
-        .dash-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 15px;
-        }
-
-        .dash-total {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.3);
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        /* 圖表容器 */
-        .chart-container {
-            margin-top: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 8px;
-            padding: 10px;
-        }
-
-        .add-section {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .input-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .input-row > * {
-            flex: 1;
-        }
-
-        input {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
-            width: 100%;
-        }
-
-        .add-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .stock-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .stock-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--tw-color);
-            position: relative;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .stock-info .symbol {
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .stock-info .category {
-            font-size: 13px;
-            color: #777;
-        }
-
-        .price-container {
-            text-align: right;
-        }
-
-        .price {
-            font-size: 20px;
-            font-weight: bold;
-            color: #3c4043;
-        }
-        
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #c62828;
-            font-size: 14px;
-            cursor: pointer;
-            padding: 5px;
-            margin-top: 5px;
-            border-radius: 4px;
-            transition: 0.2s;
-        }
-        
-        .delete-btn:hover {
-            background-color: #ffebee;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-
-        .refresh-btn {
-            background: none;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            align-self: flex-end;
-        }
+        :root { --primary-color: #1a73e8; --bg-color: #f8f9fa; --card-bg: #ffffff; --tw-color: #e67e22; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; }
+        .dashboard { background: linear-gradient(135deg, #1a73e8, #2890ff); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(26,115,232,0.3); display: none; }
+        .dash-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+        .dash-total { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3); font-size: 18px; font-weight: bold; }
+        .chart-container { margin-top: 20px; background: rgba(255, 255, 255, 0.95); border-radius: 8px; padding: 10px; }
+        .add-section { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .input-row { display: flex; gap: 10px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .add-btn { background-color: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .stock-card { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--tw-color); position: relative; margin-bottom: 15px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .price { font-size: 20px; font-weight: bold; }
+        .delete-btn { background: none; border: none; color: #c62828; font-size: 14px; cursor: pointer; padding: 5px; margin-top: 5px; }
+        .refresh-btn { background: none; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; align-self: flex-end; cursor: pointer; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <header>
-        <h1>庫藏追蹤系統</h1>
-    </header>
-
-    <!-- 總資產看板區塊 -->
+    <header><h1>庫藏追蹤系統</h1></header>
     <div id="dashboard" class="dashboard">
-        <div class="dash-title">當前市場總資產</div>
-        <div class="dash-row">
-            <span>總投入成本 (含稅費)</span>
-            <span id="dashTotalCost">0</span>
-        </div>
-        <div class="dash-row">
-            <span>當前總現值 (扣稅費)</span>
-            <span id="dashTotalValue">0</span>
-        </div>
-        <div class="dash-total">
-            <span>未實現總損益</span>
-            <span id="dashTotalPnl">0 (0.00%)</span>
-        </div>
-        
-        <!-- 資產配置圓餅圖容器 -->
-        <div class="chart-container" id="chartContainer" style="display: none;">
-            <canvas id="portfolioChart"></canvas>
-        </div>
+        <div class="dash-row"><span>總成本(含稅費)</span><span id="dashTotalCost">0</span></div>
+        <div class="dash-row"><span>總現值(扣稅費)</span><span id="dashTotalValue">0</span></div>
+        <div class="dash-total"><span>未實現總損益</span><span id="dashTotalPnl">0 (0.00%)</span></div>
+        <div class="chart-container" id="chartContainer" style="display: none;"><canvas id="portfolioChart"></canvas></div>
     </div>
-
     <div class="add-section">
         <div class="input-row">
             <input type="text" id="stockSymbol" placeholder="台股代碼 (如 3481)">
-            <input type="text" id="stockName" placeholder="自訂名稱 (如 群創)">
+            <input type="text" id="stockName" placeholder="名稱 (如 群創)">
         </div>
         <div class="input-row">
-            <input type="number" id="stockCost" placeholder="單價 (選填)" step="any">
-            <input type="number" id="stockShares" placeholder="股數 (選填)" step="any">
+            <input type="number" id="stockCost" placeholder="單價" step="any">
+            <input type="number" id="stockShares" placeholder="股數" step="any">
         </div>
         <button class="add-btn" onclick="handleAddStock()">加入庫藏</button>
     </div>
-
-    <div style="display: flex; justify-content: flex-end;">
-        <button class="refresh-btn" onclick="loadStocks()">重新整理報價</button>
-    </div>
-
-    <div id="stockList" class="stock-list">
-        <div class="loading">載入資料中...</div>
-    </div>
+    <button class="refresh-btn" onclick="loadStocks()">重新整理報價</button>
+    <div id="stockList" class="stock-list"></div>
 </div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycby9L6QFGoMMz0Vl3senZbrQfLBCgMd53kQM6WcQcMPDenfzhF54UhviK91shrPqW0JB/exec";
-    let allStocks = [];
     let portfolioChartInstance = null;
 
-    // 註冊 Service Worker (PWA 核心)
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗', err));
-      });
+      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
     }
 
     async function loadStocks() {
         const listDiv = document.getElementById('stockList');
-        listDiv.innerHTML = '<div class="loading">正在同步雲端資料庫...</div>';
-        
+        listDiv.innerHTML = '<div style="text-align:center; color:#888;">正在獲取最新報價...</div>';
         try {
             const response = await fetch(API_URL);
-            allStocks = await response.json();
-            renderStocks();
-        } catch (error) {
-            listDiv.innerHTML = '<div class="loading" style="color: red;">連線失敗，請檢查網路設定</div>';
-        }
+            const stocks = await response.json();
+            render(stocks);
+        } catch (e) { listDiv.innerHTML = '連線失敗'; }
     }
 
-    function renderStocks() {
+    function render(stocks) {
         const listDiv = document.getElementById('stockList');
         listDiv.innerHTML = '';
-        
-        let totalNetCost = 0;
-        let totalNetValue = 0;
-        
-        // 圖表資料陣列
-        let chartLabels = [];
-        let chartData = [];
+        let tCost = 0, tValue = 0, labels = [], data = [];
 
-        // 過濾掉防呆產生的非台股資料 (確保只處理台股)
-        const filtered = allStocks.filter(s => s.category === '台股');
+        stocks.forEach(s => {
+            const curP = parseFloat(s.price);
+            if (isNaN(curP)) return;
+            const rC = s.cost * s.shares, rV = curP * s.shares;
+            const bF = Math.max(1, Math.floor(rC * 0.001425 * 0.28));
+            const nC = Math.floor(rC) + bF;
+            const sF = Math.max(1, Math.floor(rV * 0.001425 * 0.28));
+            const sT = Math.floor(rV * 0.003);
+            const nV = Math.floor(rV) - sF - sT;
+            const pnl = nV - nC, pPercent = (pnl / nC) * 100;
+            tCost += nC; tValue += nV;
+            labels.push(s.name); data.push(nV);
 
-        if (filtered.length === 0) {
-            listDiv.innerHTML = '<div class="loading">目前無庫藏紀錄</div>';
-            document.getElementById('dashboard').style.display = 'none';
-            return;
-        }
-
-        filtered.forEach(stock => {
             const card = document.createElement('div');
-            card.className = 'stock-card TW';
-            
-            const currentPrice = parseFloat(stock.price);
-            const isValidPrice = !isNaN(currentPrice);
-            const displayPrice = isValidPrice ? currentPrice : '---';
-            
-            let pnlSection = '';
-            
-            if (stock.cost > 0 && stock.shares > 0 && isValidPrice) {
-                const rawCost = stock.cost * stock.shares;
-                const rawValue = currentPrice * stock.shares;
-                
-                // 國泰證券邏輯：手續費28折，低收1元
-                const buyFee = Math.max(1, Math.floor(rawCost * 0.001425 * 0.28));
-                const netCost = Math.floor(rawCost) + buyFee;
-
-                const sellFee = Math.max(1, Math.floor(rawValue * 0.001425 * 0.28));
-                const sellTax = Math.floor(rawValue * 0.003);
-                const netValue = Math.floor(rawValue) - sellFee - sellTax;
-                
-                const pnl = netValue - netCost;
-                const pnlPercent = (pnl / netCost) * 100;
-                
-                totalNetCost += netCost;
-                totalNetValue += netValue;
-                
-                // 寫入圖表資料
-                chartLabels.push(stock.name || stock.symbol);
-                chartData.push(netValue);
-                
-                const pnlColor = pnl >= 0 ? '#d32f2f' : '#2e7d32'; 
-                const sign = pnl >= 0 ? '+' : '';
-                
-                pnlSection = `
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; font-size: 14px;">
-                        <div style="display: flex; justify-content: space-between; color: #555;">
-                            <span>持股數: ${stock.shares}</span>
-                            <span>購入均價: ${stock.cost}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 5px; color: #555;">
-                            <span>成本(含稅費): ${netCost.toLocaleString()}</span>
-                            <span>現值(扣稅費): ${netValue.toLocaleString()}</span>
-                        </div>
-                        <div style="text-align: right; margin-top: 8px; font-weight: bold; font-size: 18px; color: ${pnlColor};">
-                            淨損益: ${sign}${pnl.toLocaleString()} (${sign}${pnlPercent.toFixed(2)}%)
-                        </div>
-                    </div>
-                `;
-            }
-
+            card.className = 'stock-card';
             card.innerHTML = `
                 <div class="card-header">
-                    <div class="stock-info">
-                        <div class="symbol">${stock.symbol}</div>
-                        <div class="category">${stock.name}</div>
-                    </div>
+                    <div><b>${s.symbol}</b><br><small>${s.name}</small></div>
                     <div class="price-container">
-                        <div class="price">${displayPrice}</div>
-                        <button class="delete-btn" onclick="deleteStock(${stock.rowIndex})">刪除紀錄</button>
+                        <div class="price">${curP}</div>
+                        <button class="delete-btn" onclick="deleteStock(${s.rowIndex})">刪除</button>
                     </div>
                 </div>
-                ${pnlSection}
-            `;
+                <div style="margin-top:10px; font-size:14px; border-top:1px dashed #eee; padding-top:10px;">
+                    <div style="display:flex; justify-content:space-between"><span>成本: ${nC}</span><span>現值: ${nV}</span></div>
+                    <div style="text-align:right; font-weight:bold; color:${pnl>=0?'#d32f2f':'#2e7d32'}">
+                        損益: ${pnl>=0?'+':''}${pnl} (${pnl>=0?'+':''}${pPercent.toFixed(2)}%)
+                    </div>
+                </div>`;
             listDiv.appendChild(card);
         });
-
-        renderDashboard(totalNetCost, totalNetValue, chartLabels, chartData);
+        updateDash(tCost, tValue, labels, data);
     }
 
-    function renderDashboard(totalCost, totalValue, labels, data) {
-        const dashboard = document.getElementById('dashboard');
-        
-        if (totalCost === 0) {
-            dashboard.style.display = 'none';
-            return;
-        }
+    function updateDash(tc, tv, lbs, dt) {
+        const dash = document.getElementById('dashboard');
+        if (tc === 0) { dash.style.display = 'none'; return; }
+        const pnl = tv - tc, pp = (pnl / tc) * 100;
+        document.getElementById('dashTotalCost').innerText = tc.toLocaleString();
+        document.getElementById('dashTotalValue').innerText = tv.toLocaleString();
+        const pEl = document.getElementById('dashTotalPnl');
+        pEl.innerText = `${pnl>=0?'+':''}${pnl.toLocaleString()} (${pnl>=0?'+':''}${pp.toFixed(2)}%)`;
+        dash.style.background = pnl >= 0 ? 'linear-gradient(135deg, #d32f2f, #f44336)' : 'linear-gradient(135deg, #2e7d32, #4caf50)';
+        dash.style.display = 'block';
+        drawChart(lbs, dt);
+    }
 
-        const totalPnl = totalValue - totalCost;
-        const totalPnlPercent = (totalPnl / totalCost) * 100;
-        
-        document.getElementById('dashTotalCost').innerText = totalCost.toLocaleString();
-        document.getElementById('dashTotalValue').innerText = totalValue.toLocaleString();
-        
-        const pnlEl = document.getElementById('dashTotalPnl');
-        const sign = totalPnl >= 0 ? '+' : '';
-        pnlEl.innerText = `${sign}${totalPnl.toLocaleString()} (${sign}${totalPnlPercent.toFixed(2)}%)`;
-        
-        if (totalPnl >= 0) {
-            dashboard.style.background = 'linear-gradient(135deg, #d32f2f, #f44336)'; 
-        } else {
-            dashboard.style.background = 'linear-gradient(135deg, #2e7d32, #4caf50)'; 
-        }
-        
-        dashboard.style.display = 'block';
-
-        // 渲染 Chart.js 圓餅圖
-        if (data.length > 0) {
-            document.getElementById('chartContainer').style.display = 'block';
-            const ctx = document.getElementById('portfolioChart').getContext('2d');
-            
-            if (portfolioChartInstance) {
-                portfolioChartInstance.destroy();
-            }
-            
-            portfolioChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8d6e63', '#26a69a'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 12 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) label += ': ';
-                                    if (context.parsed !== null) label += context.parsed.toLocaleString() + ' 元';
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            document.getElementById('chartContainer').style.display = 'none';
-        }
+    function drawChart(lbs, dt) {
+        document.getElementById('chartContainer').style.display = 'block';
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        if (portfolioChartInstance) portfolioChartInstance.destroy();
+        portfolioChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: lbs, datasets: [{ data: dt, backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] },
+            options: { plugins: { legend: { position: 'right' } } }
+        });
     }
 
     async function handleAddStock() {
-        const category = "台股"; // 強制指定為台股
-        const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
-        const name = document.getElementById('stockName').value.trim(); 
-        const cost = document.getElementById('stockCost').value || 0;
-        const shares = document.getElementById('stockShares').value || 0;
-
-        if (!symbol) return alert('請輸入股票代碼');
-
-        const btn = document.querySelector('.add-btn');
-        btn.disabled = true;
-        btn.innerText = '寫入中...';
-
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: JSON.stringify({ action: "add", category, symbol, name, cost, shares }), 
-                headers: { 'Content-Type': 'text/plain' }
-            });
-            
-            document.getElementById('stockSymbol').value = '';
-            document.getElementById('stockName').value = '';
-            document.getElementById('stockCost').value = '';
-            document.getElementById('stockShares').value = '';
-            
-            setTimeout(loadStocks, 2000);
-        } catch (error) {
-            alert('新增失敗');
-            btn.disabled = false;
-            btn.innerText = '加入庫藏';
-        }
+        const symbol = document.getElementById('stockSymbol').value.toUpperCase();
+        const name = document.getElementById('stockName').value;
+        const cost = document.getElementById('stockCost').value;
+        const shares = document.getElementById('stockShares').value;
+        if (!symbol) return alert('代碼必填');
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "add", category: "台股", symbol, name, cost, shares }) });
+        setTimeout(loadStocks, 2000);
     }
 
-    async function deleteStock(rowIndex) {
-        if (!confirm('確定要刪除這筆持股紀錄嗎？')) return;
-
-        const listDiv = document.getElementById('stockList');
-        listDiv.innerHTML = '<div class="loading">正在從雲端刪除紀錄...</div>';
-
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: JSON.stringify({ action: "delete", rowIndex: rowIndex }), 
-                headers: { 'Content-Type': 'text/plain' }
-            });
-            
-            setTimeout(loadStocks, 2000);
-        } catch (error) {
-            alert('刪除失敗，請檢查網路連線');
-            loadStocks();
-        }
+    async function deleteStock(idx) {
+        if (!confirm('確定刪除？')) return;
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: idx }) });
+        setTimeout(loadStocks, 2000);
     }
 
     loadStocks();
 </script>
-
 </body>
 </html>
