@@ -1,15 +1,15 @@
 {
-  "name": "庫藏追蹤系統",
   "short_name": "庫藏追蹤",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#f8f9fa",
-  "theme_color": "#1a73e8",
+  "name": "庫藏股權損益追蹤系統",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2933/2933116.png",
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#121212",
+  "background_color": "#121212"
 }
