@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>stock</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #3c4043;
+            --tw-color: #e67e22;
+            --us-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        /* 總資產看板樣式 */
+        .dashboard {
+            background: linear-gradient(135deg, #1a73e8, #2890ff);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(26,115,232,0.3);
+            display: none; /* 預設隱藏，有資料才顯示 */
+        }
+
+        .dash-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .dash-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .dash-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #ddd;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .add-section {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-row > * {
+            flex: 1;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .add-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .stock-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stock-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid transparent;
+            position: relative;
+        }
+
+        .stock-card.TW { border-left-color: var(--tw-color); }
+        .stock-card.US { border-left-color: var(--us-color); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stock-info .symbol {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .stock-info .category {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .price-container {
+            text-align: right;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3c4043;
+        }
+        
+        /* 刪除按鈕樣式 */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #c62828;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background-color: #ffebee;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            align-self: flex-end;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>庫藏追蹤系統</h1>
+    </header>
+
+    <!-- 總資產看板區塊 -->
+    <div id="dashboard" class="dashboard">
+        <div class="dash-title" id="dashTitle">當前市場總資產 (台股)</div>
+        <div class="dash-row">
+            <span>總投入成本 (含稅費)</span>
+            <span id="dashTotalCost">0</span>
+        </div>
+        <div class="dash-row">
+            <span>當前總現值 (扣稅費)</span>
+            <span id="dashTotalValue">0</span>
+        </div>
+        <div class="dash-total">
+            <span>未實現總損益</span>
+            <span id="dashTotalPnl">0 (0.00%)</span>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('台股', this)">台股</button>
+        <button class="tab-btn" onclick="switchTab('美股', this)">美股</button>
+    </div>
+
+    <div class="add-section">
+        <div class="input-row">
+            <select id="stockCategory" style="flex: 0.6;">
+                <option value="台股">台股</option>
+                <option value="美股">美股</option>
+            </select>
+            <input type="text" id="stockSymbol" placeholder="代碼 (如 3481)" style="flex: 1.4;">
+        </div>
+        <div class="input-row">
+            <input type="text" id="stockName" placeholder="自訂名稱 (如 群創, 選填)">
+        </div>
+        <div class="input-row">
+            <input type="number" id="stockCost" placeholder="單價 (選填)" step="any">
+            <input type="number" id="stockShares" placeholder="股數 (選填)" step="any">
+        </div>
+        <button class="add-btn" onclick="handleAddStock()">加入庫藏</button>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+        <button class="refresh-btn" onclick="loadStocks()">重新整理報價</button>
+    </div>
+
+    <div id="stockList" class="stock-list">
+        <div class="loading">載入資料中...</div>
+    </div>
+</div>
+
+<script>
+    // 綁定你最新的 API 網址
+    const API_URL = "https://script.google.com/macros/s/AKfycby9L6QFGoMMz0Vl3senZbrQfLBCgMd53kQM6WcQcMPDenfzhF54UhviK91shrPqW0JB/exec";
+    let currentTab = '台股';
+    let allStocks = [];
+
+    async function loadStocks() {
+        const listDiv = document.getElementById('stockList');
+        listDiv.innerHTML = '<div class="loading">正在同步雲端資料庫...</div>';
+        
+        try {
+            const response = await fetch(API_URL);
+            allStocks = await response.json();
+            renderStocks();
+        } catch (error) {
+            listDiv.innerHTML = '<div class="loading" style="color: red;">連線失敗，請檢查網路設定</div>';
+        }
+    }
+
+    function renderStocks() {
+        const listDiv = document.getElementById('stockList');
+        listDiv.innerHTML = '';
+        
+        // 用於看板加總的變數
+        let totalNetCost = 0;
+        let totalNetValue = 0;
+
+        const filtered = allStocks.filter(s => s.category === currentTab);
+
+        if (filtered.length === 0) {
+            listDiv.innerHTML = '<div class="loading">此市場目前無庫藏紀錄</div>';
+            document.getElementById('dashboard').style.display = 'none';
+            return;
+        }
+
+        filtered.forEach(stock => {
+            const card = document.createElement('div');
+            card.className = `stock-card ${stock.category === '台股' ? 'TW' : 'US'}`;
+            
+            const currentPrice = parseFloat(stock.price);
+            const isValidPrice = !isNaN(currentPrice);
+            const displayPrice = isValidPrice ? currentPrice : '---';
+            
+            let pnlSection = '';
+            
+            if (stock.cost > 0 && stock.shares > 0 && isValidPrice) {
+                const rawCost = stock.cost * stock.shares;
+                const rawValue = currentPrice * stock.shares;
+                
+                let netCost, netValue, pnl, pnlPercent;
+
+                if (stock.category === '台股') {
+                    // 國泰證券邏輯：手續費28折，低收1元
+                    const buyFee = Math.max(1, Math.floor(rawCost * 0.001425 * 0.28));
+                    netCost = Math.floor(rawCost) + buyFee;
+
+                    const sellFee = Math.max(1, Math.floor(rawValue * 0.001425 * 0.28));
+                    const sellTax = Math.floor(rawValue * 0.003);
+                    netValue = Math.floor(rawValue) - sellFee - sellTax;
+                } else {
+                    netCost = rawCost;
+                    netValue = rawValue;
+                }
+                
+                pnl = netValue - netCost;
+                pnlPercent = (pnl / netCost) * 100;
+                
+                // 累加至看板總計
+                totalNetCost += netCost;
+                totalNetValue += netValue;
+                
+                const pnlColor = pnl >= 0 ? '#d32f2f' : '#2e7d32'; 
+                const sign = pnl >= 0 ? '+' : '';
+                
+                pnlSection = `
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; font-size: 14px;">
+                        <div style="display: flex; justify-content: space-between; color: #555;">
+                            <span>持股數: ${stock.shares}</span>
+                            <span>購入均價: ${stock.cost}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px; color: #555;">
+                            <span>成本(含稅費): ${netCost.toLocaleString()}</span>
+                            <span>現值(扣稅費): ${netValue.toLocaleString()}</span>
+                        </div>
+                        <div style="text-align: right; margin-top: 8px; font-weight: bold; font-size: 18px; color: ${pnlColor};">
+                            淨損益: ${sign}${pnl.toLocaleString()} (${sign}${pnlPercent.toFixed(2)}%)
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 卡片 HTML 結構 (加入刪除按鈕)
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="stock-info">
+                        <div class="symbol">${stock.symbol}</div>
+                        <div class="category">${stock.name}</div>
+                    </div>
+                    <div class="price-container">
+                        <div class="price">${displayPrice}</div>
+                        <button class="delete-btn" onclick="deleteStock(${stock.rowIndex})">刪除紀錄</button>
+                    </div>
+                </div>
+                ${pnlSection}
+            `;
+            listDiv.appendChild(card);
+        });
+
+        // 渲染總資產看板
+        renderDashboard(totalNetCost, totalNetValue);
+    }
+
+    function renderDashboard(totalCost, totalValue) {
+        const dashboard = document.getElementById('dashboard');
+        
+        // 如果沒有投入成本，隱藏看板
+        if (totalCost === 0) {
+            dashboard.style.display = 'none';
+            return;
+        }
+
+        const totalPnl = totalValue - totalCost;
+        const totalPnlPercent = (totalPnl / totalCost) * 100;
+        
+        document.getElementById('dashTitle').innerText = `當前市場總資產 (${currentTab})`;
+        document.getElementById('dashTotalCost').innerText = totalCost.toLocaleString();
+        document.getElementById('dashTotalValue').innerText = totalValue.toLocaleString();
+        
+        const pnlEl = document.getElementById('dashTotalPnl');
+        const sign = totalPnl >= 0 ? '+' : '';
+        pnlEl.innerText = `${sign}${totalPnl.toLocaleString()} (${sign}${totalPnlPercent.toFixed(2)}%)`;
+        
+        // 看板顏色隨損益變化 (紅漲綠跌)
+        if (totalPnl >= 0) {
+            dashboard.style.background = 'linear-gradient(135deg, #d32f2f, #f44336)'; // 賺錢紅色系
+        } else {
+            dashboard.style.background = 'linear-gradient(135deg, #2e7d32, #4caf50)'; // 虧錢綠色系
+        }
+        
+        dashboard.style.display = 'block';
+    }
+
+    function switchTab(tab, btn) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderStocks();
+    }
+
+    async function handleAddStock() {
+        const category = document.getElementById('stockCategory').value;
+        const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
+        const name = document.getElementById('stockName').value.trim(); 
+        const cost = document.getElementById('stockCost').value || 0;
+        const shares = document.getElementById('stockShares').value || 0;
+
+        if (!symbol) return alert('請輸入股票代碼');
+
+        const btn = document.querySelector('.add-btn');
+        btn.disabled = true;
+        btn.innerText = '寫入中...';
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                // 【新增】傳送 action: 'add' 參數
+                body: JSON.stringify({ action: "add", category, symbol, name, cost, shares }), 
+                headers: { 'Content-Type': 'text/plain' }
+            });
+            
+            document.getElementById('stockSymbol').value = '';
+            document.getElementById('stockName').value = '';
+            document.getElementById('stockCost').value = '';
+            document.getElementById('stockShares').value = '';
+            
+            // 寫入後自動重新載入資料
+            setTimeout(loadStocks, 2000);
+        } catch (error) {
+            alert('新增失敗');
+            btn.disabled = false;
+            btn.innerText = '加入庫藏';
+        }
+    }
+
+    // 【新增】刪除股票函數
+    async function deleteStock(rowIndex) {
+        if (!confirm('確定要刪除這筆持股紀錄嗎？')) return;
+
+        // 尋找按鈕並顯示刪除中 (視覺回饋)
+        const listDiv = document.getElementById('stockList');
+        listDiv.innerHTML = '<div class="loading">正在從雲端刪除紀錄...</div>';
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                // 傳送 action: 'delete' 參數與列號
+                body: JSON.stringify({ action: "delete", rowIndex: rowIndex }), 
+                headers: { 'Content-Type': 'text/plain' }
+            });
+            
+            // 刪除後重新載入最新資料清單
+            setTimeout(loadStocks, 2000);
+        } catch (error) {
+            alert('刪除失敗，請檢查網路連線');
+            loadStocks(); // 恢復畫面
+        }
+    }
+
+    // 啟動時自動載入資料
+    loadStocks();
+</script>
+
+</body>
+</html>
