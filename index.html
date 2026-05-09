@@ -7,7 +7,6 @@
     <link rel="manifest" href="./manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* 深色模式變數定義 */
         :root {
             --bg-deep: #121212;
             --bg-card: #1e1e1e;
@@ -41,7 +40,6 @@
             margin-bottom: 20px;
         }
 
-        /* 總覽看板 */
         .dashboard {
             background: linear-gradient(145deg, #1e3a5f, #121212);
             border: 1px solid var(--border);
@@ -69,7 +67,6 @@
             padding-top: 10px;
         }
 
-        /* 輸入區域 */
         .add-section {
             background: var(--bg-card);
             padding: 20px;
@@ -101,12 +98,8 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        .btn-add:active { opacity: 0.8; }
-
-        /* 股票卡片 */
         .stock-card {
             background: var(--bg-card);
             padding: 15px;
@@ -114,18 +107,14 @@
             margin-bottom: 12px;
             border-left: 5px solid #444;
             border-top: 1px solid var(--border);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
         .stock-card.has-data { border-left-color: var(--orange); }
 
         .card-header { display: flex; justify-content: space-between; align-items: center; }
-        
         .symbol-box b { font-size: 18px; color: var(--primary); }
         .symbol-box small { color: var(--text-sub); }
-
         .price-val { font-size: 22px; font-weight: bold; color: white; }
-
         .pnl-row { text-align: right; font-weight: bold; font-size: 20px; margin-top: 10px; }
 
         .btn-del {
@@ -171,17 +160,18 @@
     </div>
 
 <script>
+    // ⚠️ 務必填入你最新部署的 Apps Script 網址
     const API_URL = "https://script.google.com/macros/s/AKfycby9L6QFGoMMz0Vl3senZbrQfLBCgMd53kQM6WcQcMPDenfzhF54UhviK91shrPqW0JB/exec";
     let chart = null;
 
     async function load() {
         const div = document.getElementById('list');
-        div.innerHTML = '<div class="loading">正在讀取雲端數據...</div>';
+        div.innerHTML = '<div class="loading">正在同步雲端數據...</div>';
         try {
             const res = await fetch(API_URL);
             const stocks = await res.json();
             render(stocks);
-        } catch (e) { div.innerHTML = '<div class="loading" style="color:var(--red);">載入超時</div>'; }
+        } catch (e) { div.innerHTML = '<div class="loading" style="color:var(--red);">載入超時，請檢查連線</div>'; }
     }
 
     function render(stocks) {
@@ -200,12 +190,13 @@
             const card = document.createElement('div');
             card.className = 'stock-card';
             
+            // 判斷是否為「純觀察股票」：只要單價或股數任一為 0 即不顯示損益
             const hasTradeData = s.cost > 0 && s.shares > 0;
             let bodyContent = '';
             
             if (hasTradeData && !isNaN(curP)) {
                 card.classList.add('has-data');
-                // 國泰證券邏輯
+                // 國泰證券邏輯：手續費 28 折，最低 1 元
                 const rC = s.cost * s.shares;
                 const rV = curP * s.shares;
                 const bF = Math.max(1, Math.floor(rC * 0.001425 * 0.28));
@@ -286,17 +277,11 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         document.getElementById('sym').value = ''; document.getElementById('nam').value = '';
         document.getElementById('cst').value = ''; document.getElementById('shr').value = '';
-        setTimeout(load, 1000);
+        setTimeout(load, 1200);
     }
 
     async function doDel(row) {
         if (!confirm('確定刪除？')) return;
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }); // 這裡 data 應為物件，修正如下
-    }
-
-    // 修正刪除邏輯中的變數錯誤
-    async function doDel(row) {
-        if (!confirm('確定要刪除這筆持股嗎？')) return;
         await fetch(API_URL, { 
             method: 'POST', 
             mode: 'no-cors', 
